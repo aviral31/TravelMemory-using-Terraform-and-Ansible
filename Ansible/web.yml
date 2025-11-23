@@ -1,0 +1,83 @@
+- hosts: web
+  become: true
+  vars:
+    repo_url: https://github.com/aviral31/TravelMemory-using-Terraform-and-Ansible.git
+    app_root: /home/ubuntu/TravelMemory
+    backend_dir: /home/ubuntu/TravelMemory/backend
+    frontend_dir: /home/ubuntu/TravelMemory/frontend
+
+    # You should store this in Ansible Vault in real life.
+    mongo_atlas_uri: "{{ vault_mongo_atlas_uri | default('YOUR_ATLAS_URI_HERE') }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install base packages
+      apt:
+        name:
+          - curl
+          - git
+          - build-essential
+        state: present
+
+    - name: Install Node.js 22.x
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+        apt-get install -y nodejs
+      args:
+        executable: /bin/bash
+
+    - name: Clone TravelMemory repo
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_root }}"
+        version: main
+        force: yes
+
+    # ---------- Backend ----------
+    - name: Install backend dependencies
+      command:
+        cmd: npm install
+        chdir: "{{ backend_dir }}"
+
+    - name: Create backend .env (Atlas)
+      copy:
+        dest: "{{ backend_dir }}/.env"
+        content: |
+          MONGO_URI={{ mongo_atlas_uri }}
+          PORT=3001
+
+    - name: Install PM2 globally
+      npm:
+        name: pm2
+        global: yes
+
+    - name: Start backend with PM2
+      shell: |
+        cd "{{ backend_dir }}"
+        pm2 start index.js --name travelmemory-backend || pm2 restart travelmemory-backend
+        pm2 save
+      args:
+        executable: /bin/bash
+
+    # ---------- Frontend ----------
+    - name: Install frontend dependencies
+      command:
+        cmd: npm install
+        chdir: "{{ frontend_dir }}"
+
+    - name: Create frontend .env with backend URL
+      copy:
+        dest: "{{ frontend_dir }}/.env"
+        content: |
+          REACT_APP_BACKEND_URL=http://{{ hostvars[inventory_hostname].ansible_host | default(ansible_host) }}:3001
+
+    - name: Start frontend with PM2 (npm start)
+      shell: |
+        cd "{{ frontend_dir }}"
+        pm2 start npm --name travelmemory-frontend -- start || pm2 restart travelmemory-frontend
+        pm2 save
+      args:
+        executable: /bin/bash

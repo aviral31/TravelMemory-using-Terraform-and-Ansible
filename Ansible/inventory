@@ -1,0 +1,5 @@
+[web]
+16.52.31.153 ansible_user=ubuntu ansible_ssh_private_key_file=/mnt/c/Users/aviralp/Desktop/Aviral/Hero_Vired/aviralpaliwal.pem
+
+[db]
+10.0.2.118 ansible_user=ubuntu ansible_ssh_private_key_file=/mnt/c/Users/aviralp/Desktop/Aviral/Hero_Vired/aviralpaliwal.pem ansible_ssh_common_args='-o ProxyCommand="ssh -i /mnt/c/Users/aviralp/Desktop/Aviral/Hero_Vired/aviralpaliwal.pem -W %h:%p ubuntu@16.52.31.153"'

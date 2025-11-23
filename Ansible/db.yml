@@ -1,0 +1,66 @@
+- hosts: db
+  become: true
+  vars:
+    mongo_admin_user: adminuser
+    mongo_admin_pass: StrongAdminPass123
+    mongo_app_db: travelmemory
+    mongo_app_user: tm_user
+    mongo_app_pass: TravelMemPass123
+  tasks:
+    - name: Import MongoDB public GPG key
+      apt_key:
+        url: https://pgp.mongodb.com/server-6.0.asc
+        state: present
+
+    - name: Add MongoDB repo
+      copy:
+        dest: /etc/apt/sources.list.d/mongodb-org-6.0.list
+        content: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse\n"
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb-org
+        state: present
+
+    - name: Ensure mongod is running and enabled
+      service:
+        name: mongod
+        state: started
+        enabled: yes
+
+    # (Optional) Configure bindIp & security in /etc/mongod.conf here
+
+    - name: Wait for MongoDB to be up
+      wait_for:
+        host: 127.0.0.1
+        port: 27017
+        delay: 5
+        timeout: 30
+
+    - name: Create admin user
+      shell: |
+        mongo <<EOF
+        use admin
+        db.createUser({user: "{{ mongo_admin_user }}", pwd: "{{ mongo_admin_pass }}", roles:["root"]})
+        EOF
+      args:
+        executable: /bin/bash
+      register: create_admin
+      failed_when: false
+      changed_when: "'already exists' not in create_admin.stdout"
+
+    - name: Create app DB and user
+      shell: |
+        mongo <<EOF
+        use {{ mongo_app_db }}
+        db.createUser({user: "{{ mongo_app_user }}", pwd: "{{ mongo_app_pass }}", roles:["readWrite"]})
+        EOF
+      args:
+        executable: /bin/bash
+      register: create_app_user
+      failed_when: false
+      changed_when: "'already exists' not in create_app_user.stdout"

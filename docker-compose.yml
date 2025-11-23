@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: backendtm
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb+srv://aviralpaliwal007:58Donut65@cluster0.rrcjngo.mongodb.net/travelmemory?retryWrites=true&w=majority
+    networks:
+      - aviral_network
+
+  frontend:
+    build: ./frontend
+    container_name: frontendtm
+    ports:
+      - "3000:3000"
+    networks:
+      - aviral_network
+
+networks:
+  aviral_network:
+    driver: bridge
