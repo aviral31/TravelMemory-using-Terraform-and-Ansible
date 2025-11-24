@@ -1,138 +1,164 @@
-MERN Deployment on AWS using Terraform & Ansible
-1. Objective
+# TravelMemory — MERN Deployment with Terraform & Ansible
 
-This project demonstrates deploying a MERN (MongoDB, Express, React, Node.js) application on AWS using:
+A demonstration project that provisions AWS infrastructure with Terraform and configures & deploys a MERN application using Ansible. This repo contains Terraform configuration and Ansible playbooks used to create the required AWS resources and install the application.
 
-Terraform for Infrastructure provisioning
+---
 
-Ansible for Configuration Management and Deployment
+**Overview:**
 
-Application used:
-https://github.com/UnpredictablePrashant/TravelMemory
+- Terraform: provision VPC, subnets, NAT, Internet Gateway, EC2 instances, security groups, route tables and outputs.
+- Ansible: configure EC2 instances (web and db), install runtime dependencies, deploy backend & frontend, and (optionally) install a local MongoDB for assignment demonstration.
 
-2. Architecture Overview
+Repository used for application code:
 
-The deployment consists of:
+- https://github.com/UnpredictablePrashant/TravelMemory
 
-AWS VPC
+---
 
-Public Subnet
+**Architecture (high level):**
 
-EC2 running frontend & backend
+- `VPC` — isolated network
+- `Public Subnet` — Web EC2 (frontend + backend)
+- `Private Subnet` — DB EC2 (local MongoDB for demo)
+- `NAT Gateway` — allows private instances to reach the internet
+- `Security Groups` — restrict SSH and DB access
 
-Private Subnet
+> Note: Production deployments should use a managed database (MongoDB Atlas). The local MongoDB instance exists only to satisfy assignment demonstration requirements.
 
-EC2 running local MongoDB
+---
 
-Used for demonstration of assignment DB setup
+**Prerequisites**
 
-NAT Gateway
+- Terraform (v1.x)
+- Ansible (v2.9+)
+- AWS CLI configured with appropriate IAM credentials
+- Node.js (for local testing)
 
-Private EC2 has restricted internet access
+**Security reminder:**
 
-Security Groups
+- Never commit real credentials (MongoDB URI, AWS secret keys) into the repo. Use environment variables or a secret manager.
 
-SSH only from my IP
+---
 
-DB accessible only from web instance
+**Quick start — Terraform**
 
-Actual production DB usage: MongoDB Atlas
-The application connects to Atlas via MONGO_URI.
+1. Initialize Terraform providers:
 
-Local MongoDB on EC2 is installed to satisfy assignment requirement Part 2.3.
-
-3. Terraform — Infrastructure
-
-Terraform provisions:
-
-AWS Resource	Purpose
-VPC	Network boundary
-Public Subnet	Web server EC2
-Private Subnet	DB server EC2
-Internet Gateway	Internet access
-NAT Gateway	Private EC2 outbound access
-EC2-Web	frontend + backend
-EC2-DB	MongoDB
-Security Groups	Locked-down network access
-Route Tables	Public & NAT routing
-Outputs	Public & private IP addresses
-
-All .tf files included in repository.
-
-4. Ansible — Configuration & Deployment
-
-Two playbooks were written:
-
-✔ web.yml
-
-Installs Node.js 22.x
-
-Clones TravelMemory repo
-
-Creates .env with MongoDB Atlas URI
-
-Installs dependencies
-
-Starts backend with PM2
-
-Starts frontend with PM2
-
-Sets REACT_APP_BACKEND_URL
-
-✔ db.yml
-
-Installs MongoDB locally on DB EC2
-
-Creates Mongo users and roles
-
-Demonstrates DB server setup as per assignment requirement
-
-5. Database
-Resource	Purpose
-MongoDB Atlas	Production database used by app
-Local MongoDB on DB EC2	Required by assignment to demonstrate DB installation & access
-
-Application ultimately uses:
-
-MONGO_URI= MongoDB Atlas connection string
-
-6. Deployment Steps Run
-Terraform
+```powershell
+cd terraform
 terraform init
-terraform plan
-terraform apply -auto-approve
+```
 
-Ansible
-export MONGO_URI="mongodb+srv://..."
+2. Review the plan:
+
+```powershell
+terraform plan
+```
+
+3. Create resources (apply):
+
+```powershell
+terraform apply -auto-approve
+```
+
+Terraform will print outputs including the public IP of the web EC2 and the private IP of the DB EC2.
+
+---
+
+**Quick start — Ansible**
+
+1. Prepare inventory (update the host IPs or use the Terraform output to populate `inventory`):
+
+```ini
+[web]
+<WEB_PUBLIC_IP> ansible_user=ec2-user ansible_ssh_private_key_file=path/to/key.pem
+
+[db]
+<DB_PRIVATE_IP> ansible_user=ec2-user ansible_ssh_private_key_file=path/to/key.pem
+```
+
+2. Export required variables (example):
+
+```powershell
+$env:MONGO_URI = "mongodb+srv://<user>:<pass>@cluster.mongodb.net/<dbname>?retryWrites=true&w=majority"
+```
+
+3. Run playbooks:
+
+```powershell
 ansible-playbook -i inventory db.yml
 ansible-playbook -i inventory web.yml
+```
 
-7. Security Hardening Implemented
+Ansible playbooks perform tasks such as installing Node.js, cloning the TravelMemory app, creating `.env` files, installing dependencies, and launching the services (PM2 is recommended for process management).
 
-SSH restricted to my IP only
+---
 
-DB EC2 isolated in private subnet
+**Files & roles (what to expect in this repo)**
 
-MongoDB EC2 only accessible from web server security group
+- `terraform/` — Terraform `.tf` files for AWS resources
+- `ansible/` — `web.yml`, `db.yml`, `inventory`, and any roles/handlers
+- `README.md` — this document
 
-No DB exposed to the public internet
+---
 
-HTTPS can be enabled later using Nginx + certbot
+**Testing the deployment**
 
-8. Testing
+- Frontend: `http://<WEB_PUBLIC_IP>:3000`
+- Backend API: `http://<WEB_PUBLIC_IP>:3001`
 
-Frontend accessible:
+Use the API endpoints to verify database connectivity and data operations.
 
-http://WEB_PUBLIC_IP:3000
+---
 
+**Cleanup (destroy infrastructure)**
 
-Backend API:
+Use Terraform to remove the provisioned resources:
 
-http://WEB_PUBLIC_IP:3001
+```powershell
+cd terraform
+terraform destroy -auto-approve
+```
 
+Note: Ensure you clean up any snapshots, volumes, or unattached resources that may incur cost.
 
-MongoDB Atlas verified:
+---
 
-data inserted from backend API
+**Screenshots / Evidence (placeholders)**
 
-collections populated
+Please replace these placeholders with screenshots required for the assignment submission.
+
+- `screenshots/terraform-apply.png` — Terraform apply output
+- `screenshots/aws-vpc.png` — VPC & subnets in AWS console
+- `screenshots/ec2-list.png` — EC2 instances list
+- `screenshots/security-groups.png` — Security groups showing SSH & DB rules
+- `screenshots/ansible-run.png` — Successful Ansible execution
+- `screenshots/app-browser.png` — App running in browser
+- `screenshots/mongo-atlas.png` — MongoDB Atlas collections (if used)
+
+Insert images in this README using Markdown image syntax, for example:
+
+```markdown
+![Terraform apply](screenshots/terraform-apply.png)
+```
+
+---
+
+**Notes & recommendations**
+
+- For production, use an RDS or managed MongoDB (Atlas). Do not expose MongoDB publicly.
+- Add HTTPS using a reverse proxy (Nginx) and Certbot for Let's Encrypt certificates.
+- Use a CI/CD pipeline to run Terraform + Ansible in a controlled workflow.
+
+---
+
+**Contact / References**
+
+- Application repo: https://github.com/UnpredictablePrashant/TravelMemory
+- This repo: https://github.com/aviral31/ContainerizationandContainerOrchestration
+
+If you want, I can also:
+
+- add example `inventory` populated from Terraform outputs,
+- add a sample `vars` file for Ansible with secure handling suggestions,
+- or include a small diagram (ASCII or image) of the architecture.
