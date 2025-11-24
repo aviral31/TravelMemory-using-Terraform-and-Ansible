@@ -7,7 +7,7 @@ A demonstration project that provisions AWS infrastructure with Terraform and co
 **Overview:**
 
 - Terraform: provision VPC, subnets, NAT, Internet Gateway, EC2 instances, security groups, route tables and outputs.
-- Ansible: configure EC2 instances (web and db), install runtime dependencies, deploy backend & frontend, and (optionally) install a local MongoDB for assignment demonstration.
+- Ansible: configure EC2 instances (web and db), install runtime dependencies, deploy backend & frontend
 
 Repository used for application code:
 
@@ -23,8 +23,6 @@ Repository used for application code:
 - `NAT Gateway` — allows private instances to reach the internet
 - `Security Groups` — restrict SSH and DB access
 
-> Note: Production deployments should use a managed database (MongoDB Atlas). The local MongoDB instance exists only to satisfy assignment demonstration requirements.
-
 ---
 
 **Prerequisites**
@@ -33,10 +31,6 @@ Repository used for application code:
 - Ansible (v2.9+)
 - AWS CLI configured with appropriate IAM credentials
 - Node.js (for local testing)
-
-**Security reminder:**
-
-- Never commit real credentials (MongoDB URI, AWS secret keys) into the repo. Use environment variables or a secret manager.
 
 ---
 
@@ -94,20 +88,10 @@ Ansible playbooks perform tasks such as installing Node.js, cloning the TravelMe
 
 ---
 
-**Files & roles (what to expect in this repo)**
-
-- `terraform/` — Terraform `.tf` files for AWS resources
-- `ansible/` — `web.yml`, `db.yml`, `inventory`, and any roles/handlers
-- `README.md` — this document
-
----
-
 **Testing the deployment**
 
 - Frontend: `http://<WEB_PUBLIC_IP>:3000`
 - Backend API: `http://<WEB_PUBLIC_IP>:3001`
-
-Use the API endpoints to verify database connectivity and data operations.
 
 ---
 
@@ -119,14 +103,9 @@ Use Terraform to remove the provisioned resources:
 cd terraform
 terraform destroy -auto-approve
 ```
-
-Note: Ensure you clean up any snapshots, volumes, or unattached resources that may incur cost.
-
 ---
 
-**Screenshots / Evidence (placeholders)**
-
-Please replace these placeholders with screenshots required for the assignment submission.
+**Screenshots / Evidence**
 
 - `screenshots/terraform-apply.png` — Terraform apply output
 - `screenshots/aws-vpc.png` — VPC & subnets in AWS console
@@ -141,24 +120,4 @@ Insert images in this README using Markdown image syntax, for example:
 ```markdown
 ![Terraform apply](screenshots/terraform-apply.png)
 ```
-
 ---
-
-**Notes & recommendations**
-
-- For production, use an RDS or managed MongoDB (Atlas). Do not expose MongoDB publicly.
-- Add HTTPS using a reverse proxy (Nginx) and Certbot for Let's Encrypt certificates.
-- Use a CI/CD pipeline to run Terraform + Ansible in a controlled workflow.
-
----
-
-**Contact / References**
-
-- Application repo: https://github.com/UnpredictablePrashant/TravelMemory
-- This repo: https://github.com/aviral31/ContainerizationandContainerOrchestration
-
-If you want, I can also:
-
-- add example `inventory` populated from Terraform outputs,
-- add a sample `vars` file for Ansible with secure handling suggestions,
-- or include a small diagram (ASCII or image) of the architecture.
