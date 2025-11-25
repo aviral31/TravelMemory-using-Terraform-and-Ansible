@@ -105,19 +105,12 @@ terraform destroy -auto-approve
 ```
 ---
 
-**Screenshots / Evidence**
+**Screenshots**
 
-- `screenshots/terraform-apply.png` — Terraform apply output
-- `screenshots/aws-vpc.png` — VPC & subnets in AWS console
-- `screenshots/ec2-list.png` — EC2 instances list
-- `screenshots/security-groups.png` — Security groups showing SSH & DB rules
-- `screenshots/ansible-run.png` — Successful Ansible execution
-- `screenshots/app-browser.png` — App running in browser
-- `screenshots/mongo-atlas.png` — MongoDB Atlas collections (if used)
+- ![Terraform plan](screenshots/terraform-plan.png)
+- ![alt](screenshots/terraform-plan.png)
+- ![Terraform apply](screenshots/terraform-plan.png)
+- ![App running in browser](screenshots/terraform-plan.png)
+- ![MongoDB Atlas](screenshots/terraform-plan.png)
 
-Insert images in this README using Markdown image syntax, for example:
-
-```markdown
-![Terraform apply](screenshots/terraform-apply.png)
-```
 ---
