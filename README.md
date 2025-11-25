@@ -107,10 +107,14 @@ terraform destroy -auto-approve
 
 **Screenshots**
 
-- ![Terraform plan](screenshots/terraform-plan.png)
-- ![alt](screenshots/terraform-plan.png)
-- ![Terraform apply](screenshots/terraform-plan.png)
-- ![App running in browser](screenshots/terraform-plan.png)
-- ![MongoDB Atlas](screenshots/terraform-plan.png)
+- Terraform plan
+- ![Terraform plan](screenshots/tfplan1.png)
+- ![alt](screenshots/tfplan2.png)
+- Terraform apply
+- ![Terraform apply](screenshots/tfapply1.png)
+- App running in browser
+- ![App running in browser](screenshots/runningapp.png)
+- MongoDB Atlas
+- ![MongoDB Atlas](screenshots/mongodb.png)
 
 ---
